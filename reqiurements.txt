@@ -1,0 +1,17 @@
+openai 
+jiwer 
+transformers 
+torch 
+librosa 
+soundfile 
+IPython
+sounddevice 
+scipy 
+numpy
+playsound 
+pygame
+fastapi 
+uvicorn 
+python-multipart
+pydub
+openai
