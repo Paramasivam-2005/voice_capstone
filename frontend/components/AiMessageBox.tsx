@@ -20,16 +20,24 @@ export default function AiMessageBox({
       });
     }
   }, [audioURL, audioEnabled]);
+
+   const handleEnded = () => {
+    window.dispatchEvent(new Event("aiAudioFinished"));
+  };
   
   return (
-    <>
-      <div className="h-10 text-[#000000] bg-amber-200 w-[200px]">
+     <>
+      <div className="h-10 text-black bg-amber-200 w-[200px]">
         {message}
       </div>
+
       {audioURL && (
-        <div>
-          <audio ref={audioRef} controls src={audioURL}></audio>
-        </div>
+        <audio
+          ref={audioRef}
+          src={audioURL}
+          controls
+          onEnded={handleEnded}
+        />
       )}
     </>
   );

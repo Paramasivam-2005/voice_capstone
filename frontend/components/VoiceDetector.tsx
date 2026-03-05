@@ -1,78 +1,130 @@
 "use client";
 
 import { MicVAD } from "@ricky0123/vad-web";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { encodeWAV } from "@/utils/wavEncoder";
 import { useChatStore } from "@/store/useChatStore";
 import { sendAudio } from "@/utils/SendAudioAPI";
 
 export default function VoiceDetector() {
+
   const [status, setStatus] = useState("Initializing...");
-  const [audioURL, setAudioURL] = useState<string | null>(null);
+  const vadRef = useRef<any>(null);
+
   const sessionId = useChatStore((state) => state.sessionId);
-  
+  const [isProcessing, setIsProcessing] = useState(false);
+
+  // 🎤 START VAD
   useEffect(() => {
+
     async function startVAD() {
+
       const vad = await MicVAD.new({
+
         onSpeechStart: () => {
+          if (isProcessing) return;
+
           console.log("🟢 Speech started");
           setStatus("🎤 Speaking...");
         },
 
         onSpeechEnd: async (audio: Float32Array) => {
+
+          if (isProcessing) return;
+
           console.log("🔴 Speech ended");
 
+          setIsProcessing(true);
           setStatus("Processing...");
 
-          // ✅ Convert raw audio to WAV
+          vad.pause(); // 🛑 stop mic
+
           const wavBlob = encodeWAV(audio);
-          
-          // ✅ Create preview URL
-          const url = URL.createObjectURL(wavBlob);
 
-          // ✅ Store audio locally
-          setAudioURL(url);
-
-          // OPTIONAL: Store Blob also in state if needed later
-          console.log("Audio stored in frontend:", wavBlob);
-  
-          // ✅ Send audio to backend
           if (sessionId) {
             try {
               await sendAudio(wavBlob, sessionId);
             } catch (err) {
-              console.error("Error sending audio:", err);
+              console.error(err);
             }
           }
 
-          setStatus("🎤 Listening...");
+          setStatus("Waiting AI response...");
         },
-        positiveSpeechThreshold: 0.8, 
-        minSpeechMs: 800,
-        redemptionMs: 200,
+
+        positiveSpeechThreshold: 0.8,
+        minSpeechMs: 400,
+        redemptionMs: 300,
+
         baseAssetPath:
           "https://cdn.jsdelivr.net/npm/@ricky0123/vad-web@0.0.29/dist/",
+
         onnxWASMBasePath:
           "https://cdn.jsdelivr.net/npm/onnxruntime-web@1.22.0/dist/",
       });
+
+      vadRef.current = vad; // ⭐ IMPORTANT
 
       vad.start();
       setStatus("🎤 Listening...");
     }
 
     startVAD();
-  }, [sessionId]); 
+
+  }, [sessionId]);
+
+
+
+  // ⭐ LISTEN WHEN AI AUDIO FINISHES
+  useEffect(() => {
+
+    const resume = () => {
+
+      if (vadRef.current) {
+
+        vadRef.current.start();
+
+        setIsProcessing(false);
+        setStatus("🎤 Listening...");
+      }
+    };
+
+    window.addEventListener("aiAudioFinished", resume);
+
+    return () => {
+      window.removeEventListener("aiAudioFinished", resume);
+    };
+
+  }, []);
+
+
+
+
+  const resumeListening = () => {
+
+    if (vadRef.current) {
+
+      vadRef.current.start();
+
+      setIsProcessing(false);
+
+      setStatus("🎤 Listening...");
+    }
+  };
+
+
 
   return (
     <div style={{ padding: "20px" }}>
       <h2>{status}</h2>
 
-      {audioURL && (
-        <div>
-          <h3>Last Recorded Audio:</h3>
-          <audio controls src={audioURL}></audio>
-        </div>
-      )}
+      {/* debug button */}
+      <button
+        onClick={resumeListening}
+        className="bg-blue-500 text-white p-2 rounded"
+      >
+        Resume Listening
+      </button>
     </div>
   );
 }
