@@ -6,39 +6,52 @@ export default function AiMessageBox({
   audioEnabled,
 }: {
   message: string;
-  audioURL: string;
+  audioURL?: string;
   audioEnabled: boolean;
 }) {
 
   const audioRef = useRef<HTMLAudioElement>(null);
 
-
   useEffect(() => {
-    if (audioRef.current && audioURL && audioEnabled) {
-      audioRef.current.play().catch((err) => {
-        console.log("Autoplay blocked:", err);
-      });
-    }
-  }, [audioURL, audioEnabled]);
 
-   const handleEnded = () => {
+  if (!audioEnabled) return;
+
+  if (audioRef.current && audioURL) {
+
+    const playAudio = async () => {
+
+      try {
+        await audioRef.current?.play();
+      } catch (err) {
+        console.log("Autoplay blocked");
+      }
+
+    };
+
+    playAudio();
+  }
+
+}, [audioURL, audioEnabled]);
+
+  const handleEnded = () => {
     window.dispatchEvent(new Event("aiAudioFinished"));
   };
-  
+
   return (
-     <>
-      <div className="h-10 text-black bg-amber-200 w-[200px]">
-        {message}
-      </div>
+    <div className="max-w-[75%] bg-gray-100 text-gray-800 p-3 rounded-xl shadow-sm">
+
+      <p>{message}</p>
 
       {audioURL && (
         <audio
           ref={audioRef}
           src={audioURL}
-          controls
           onEnded={handleEnded}
+          className="mt-2 w-full"
+          controls
         />
       )}
-    </>
+
+    </div>
   );
 }

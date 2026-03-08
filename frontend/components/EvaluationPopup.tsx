@@ -7,19 +7,19 @@ export default function EvaluationPopup() {
   if (!showEvaluation || !selectedEvaluation) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/40 flex items-end">
+    <div className="fixed inset-0 bg-black/40 flex items-end justify-center">
 
-      <div className="bg-white w-full p-6 rounded-t-2xl">
+      <div className="bg-white w-[380px] p-6 rounded-t-2xl relative">
 
         <button
           onClick={closeEvaluation}
-          className="mb-4"
+          className="absolute top-4 right-4 text-gray-500"
         >
-          ❌
+          ✕
         </button>
 
-        <h2 className="text-xl font-bold mb-4">
-          Grammar Corrections
+        <h2 className="text-lg font-semibold mb-4">
+          Grammar Feedback
         </h2>
 
         <p className="text-red-500">
@@ -30,7 +30,7 @@ export default function EvaluationPopup() {
           {selectedEvaluation.corrected_sentence}
         </p>
 
-        <p className="text-gray-600 mt-3">
+        <p className="text-gray-500 mt-3">
           {selectedEvaluation.explanation}
         </p>
 

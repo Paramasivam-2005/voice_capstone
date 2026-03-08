@@ -1,74 +1,53 @@
 "use client";
-import { useEffect } from "react";
-import { useState } from "react";
 
-import { useChatStore } from "@/store/useChatStore";
-import {startSession} from "@/utils/StartSesstionAPI";
+import Link from "next/link";
 
-import VoiceDetector from "@/components/VoiceDetector";
-import AiMessageBox from "@/components/AiMessageBox";
-import UserMessageBox from "@/components/UserMessageBox";
-import EvaluationPopup from "@/components/EvaluationPopup";
-
-export default function Home() {
-  // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-  useEffect((() => {
-      startSession();
-  }),[]);
-
-  const [audioEnabled, setAudioEnabled] = useState(false);
-
-   const { messages} = useChatStore();
-
- 
-
+export default function HomePage() {
   return (
-    <div className="flex flex-col h-screen justify-between">
+    <div className="flex justify-center items-center min-h-screen bg-gray-100">
 
-      {/* Chat Area */}
-      <div className="flex flex-col gap-4 p-4 overflow-y-auto">
+      {/* Phone container */}
+      <div className="w-[380px] h-[720px] bg-white rounded-3xl shadow-xl p-6 flex flex-col">
 
-        {messages.map((msg) => {
+        {/* Header */}
+        <h1 className="text-2xl font-bold mb-6 text-gray-800">
+          English Learning
+        </h1>
 
-          if (msg.sender === "ai") {
-            return (
-              <AiMessageBox
-                key={msg.id}
-                message={msg.text}
-                audioURL={msg.audioURL}
-                evaluation={msg.evaluation}
-                audioEnabled={audioEnabled}
-              />
-            );
-          }
+        <p className="text-gray-500 mb-6">
+          Practice speaking and improve your grammar.
+        </p>
 
-          return (
-            <UserMessageBox
-              key={msg.id}
-              child_text={msg.text}
-              evaluation={msg.evaluation}
-            />
-          );
-        })}
+        {/* Learning Cards */}
+        <div className="flex flex-col gap-4">
+
+          {/* Speak With AI */}
+          <Link href="/speak">
+            <div className="bg-blue-600 text-white p-5 rounded-xl shadow hover:scale-[1.02] transition">
+              <h2 className="text-lg font-semibold">
+                Speak with AI
+              </h2>
+              <p className="text-sm opacity-80 mt-1">
+                Practice English conversation with AI
+              </p>
+            </div>
+          </Link>
+
+          {/* Friend Feature */}
+          <Link href="/practice">
+            <div className="bg-purple-600 text-white p-5 rounded-xl shadow hover:scale-[1.02] transition">
+              <h2 className="text-lg font-semibold">
+                Practice Exercises
+              </h2>
+              <p className="text-sm opacity-80 mt-1">
+                Improve grammar and vocabulary
+              </p>
+            </div>
+          </Link>
+
+        </div>
 
       </div>
-
-      {/* Voice Detector */}
-      <VoiceDetector />
-
-      {!audioEnabled && (
-        <button
-          onClick={() => setAudioEnabled(true)}
-          className="bg-green-500 text-white p-3"
-        >
-          Enable Audio
-        </button>
-        
-      )}
-      <EvaluationPopup />
     </div>
-      
-      
   );
 }
-  

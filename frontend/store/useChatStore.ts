@@ -63,10 +63,23 @@ import { create } from "zustand";
     selectedEvaluation: undefined,
   }),
 
-    setStartSession: (sessionId) =>
-      set({
-        sessionId,
-      }),
+   setStartSession: (
+  sessionId: string,
+  message: string,
+  audio_url: string
+) =>
+  set((state) => ({
+    sessionId,
+    messages: [
+      ...state.messages,
+      {
+        id: Date.now().toString(),
+        sender: "ai",
+        text: message,
+        audioURL: audio_url,
+      },
+    ],
+  })),
 
     setSendAudioResponse: (child_text: string, ai_message: string, evaluation: Evaluation, audio_url: string) =>
   set((state) => ({
@@ -85,7 +98,6 @@ import { create } from "zustand";
         sender: "ai",
         text: ai_message,
         audioURL: audio_url,
-        evaluation,
       },
     ],
   })),

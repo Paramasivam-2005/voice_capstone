@@ -8,20 +8,21 @@ import { sendAudio } from "@/utils/SendAudioAPI";
 
 export default function VoiceDetector() {
 
-  const [status, setStatus] = useState("Initializing...");
-  const vadRef = useRef<any>(null);
-
   const sessionId = useChatStore((state) => state.sessionId);
+  
+  const vadRef = useRef<any>(null);
+  const [status, setStatus] = useState("Waiting AI...");
   const [isProcessing, setIsProcessing] = useState(false);
 
-  // 🎤 START VAD
+  // 🎤 Initialize VAD
   useEffect(() => {
 
-    async function startVAD() {
+    let vadInstance:any;
 
-      const vad = await MicVAD.new({
-
-        onSpeechStart: () => {
+  async function initVAD() {
+    const vad = await MicVAD.new({
+      onSpeechStart: () => {
+          
           if (isProcessing) return;
 
           console.log("🟢 Speech started");
@@ -35,27 +36,34 @@ export default function VoiceDetector() {
           console.log("🔴 Speech ended");
 
           setIsProcessing(true);
-          setStatus("Processing...");
+          setStatus("🧠 AI thinking...");
 
-          vad.pause(); // 🛑 stop mic
+          vad.pause(); // stop mic
 
           const wavBlob = encodeWAV(audio);
 
           if (sessionId) {
+
             try {
+
               await sendAudio(wavBlob, sessionId);
+
             } catch (err) {
-              console.error(err);
+
+              console.error("Send audio error:", err);
+
+              setStatus("Error sending audio");
             }
           }
 
           setStatus("Waiting AI response...");
         },
 
-        positiveSpeechThreshold: 0.8,
-        minSpeechMs: 400,
-        redemptionMs: 300,
-
+        positiveSpeechThreshold: 0.92,
+        negativeSpeechThreshold: 0.75,
+        minSpeechMs: 800,
+        redemptionMs: 600,
+        preSpeechPadMs: 200,
         baseAssetPath:
           "https://cdn.jsdelivr.net/npm/@ricky0123/vad-web@0.0.29/dist/",
 
@@ -63,68 +71,75 @@ export default function VoiceDetector() {
           "https://cdn.jsdelivr.net/npm/onnxruntime-web@1.22.0/dist/",
       });
 
-      vadRef.current = vad; // ⭐ IMPORTANT
+      vadRef.current = vad;
+      vadInstance = vad;
 
-      vad.start();
-      setStatus("🎤 Listening...");
+      setStatus("Waiting AI...");
     }
 
-    startVAD();
+    initVAD();
+
+    return () => {
+      vadInstance?.destroy();
+    };
 
   }, [sessionId]);
 
 
-
-  // ⭐ LISTEN WHEN AI AUDIO FINISHES
+  // ⭐ Resume mic when AI audio finishes
   useEffect(() => {
 
-    const resume = () => {
+    const resumeListening = () => {
 
-      if (vadRef.current) {
+      if (!vadRef.current) return;
 
-        vadRef.current.start();
+      console.log("🎧 AI finished → start listening");
 
-        setIsProcessing(false);
-        setStatus("🎤 Listening...");
-      }
+      setIsProcessing(false);
+
+      vadRef.current.start();
+
+      setStatus("🎤 Listening...");
     };
 
-    window.addEventListener("aiAudioFinished", resume);
+    window.addEventListener("aiAudioFinished", resumeListening);
 
     return () => {
-      window.removeEventListener("aiAudioFinished", resume);
+      window.removeEventListener("aiAudioFinished", resumeListening);
     };
 
   }, []);
 
 
+  // 🧪 Debug button
+  const manualResume = () => {
 
+    if (!vadRef.current) return;
 
-  const resumeListening = () => {
+    setIsProcessing(false);
 
-    if (vadRef.current) {
+    vadRef.current.start();
 
-      vadRef.current.start();
-
-      setIsProcessing(false);
-
-      setStatus("🎤 Listening...");
-    }
+    setStatus("🎤 Listening...");
   };
 
 
-
   return (
-    <div style={{ padding: "20px" }}>
-      <h2>{status}</h2>
 
-      {/* debug button */}
+    <div className="flex flex-col items-center gap-2">
+
+      <div className="text-sm text-gray-600">
+        {status}
+      </div>
+
       <button
-        onClick={resumeListening}
-        className="bg-blue-500 text-white p-2 rounded"
+        onClick={manualResume}
+        className="bg-blue-500 text-white px-3 py-1 rounded text-xs"
       >
         Resume Listening
       </button>
+
     </div>
+
   );
 }
