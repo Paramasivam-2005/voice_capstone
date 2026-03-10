@@ -15,3 +15,8 @@ uvicorn
 python-multipart
 pydub
 openai
+phonemizer
+pydub
+python-dotenv
+openai-whisper
+azure-cognitiveservices-speech

@@ -1,6 +1,6 @@
 "use client";
 
-import { MicVAD } from "@ricky0123/vad-web";co
+import { MicVAD } from "@ricky0123/vad-web";
 import { useEffect, useState, useRef, useCallback } from "react";
 import { encodeWAV } from "@/utils/wavEncoder";
 import { useChatStore } from "@/store/useChatStore";

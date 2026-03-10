@@ -1,1 +1,9 @@
 .venv/
+backend/.env
+.env
+venv/
+backend/audio/
+backend/uploads/
+__pycache__/
+*.wav
+*.mp3

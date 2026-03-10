@@ -11,6 +11,12 @@ from audio_utils import (
     speech_to_text,
     generate_conversation_response,
     evaluate_child_response,
+
+)
+from pronun_utils import (
+    
+    pronunciation_evaluation
+
 )
 
 app = FastAPI()
@@ -119,3 +125,35 @@ async def test(
         "audio_url": f"http://localhost:8000/audio\\2ad632f3-2c55-4cda-9f47-21819aff8f96.mp3" 
     }
         
+# @app.get("/question")
+# async def get_question():
+
+#     global current_question_index
+
+#     question = questions[current_question_index]
+
+#     return {
+#         "question": question["text"],
+#         "audio": f"http://localhost:8000/question_audio/{question['audio']}"
+#     }
+
+@app.post("/upload_audio")
+async def upload_audio(
+    file: UploadFile = File(...),
+    reference: str = Form(...)
+):
+
+    filename = f"{uuid.uuid4()}_{file.filename}"
+    file_path = os.path.join(UPLOAD_DIR, filename)
+
+    with open(file_path, "wb") as buffer:
+        buffer.write(await file.read())
+
+    
+
+    results = pronunciation_evaluation(file_path, reference)
+
+    return {
+        
+        "results": results
+    }

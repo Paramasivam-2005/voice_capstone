@@ -1,5 +1,3 @@
-
-
 def build_conversation_prompt(history, child_response=None):
     return f"""
 You are a friendly, intelligent English-speaking tutor for children aged 6–12.
@@ -78,5 +76,3 @@ Always respond ONLY in JSON format:
 - Do NOT output text outside JSON.
 - Be constructive and child-friendly in explanations.
 """
-    
-    

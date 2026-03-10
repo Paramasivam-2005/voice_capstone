@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 
+
 export default function HomePage() {
   return (
     <div className="flex justify-center items-center min-h-screen bg-gray-100">
@@ -34,7 +35,7 @@ export default function HomePage() {
           </Link>
 
           {/* Friend Feature */}
-          <Link href="/practice">
+          <Link href="/pronunciation">
             <div className="bg-purple-600 text-white p-5 rounded-xl shadow hover:scale-[1.02] transition">
               <h2 className="text-lg font-semibold">
                 Practice Exercises
